@@ -1,37 +1,46 @@
 #!/usr/bin/env python
 
-from pprint import pprint
-import curses
-
-class Curses(object):
-
-    def __init__(self):
-        self.screen = curses.initscr()
-        curses.noecho()
-        curses.curs_set(0)
-        self.screen.keypad(1)
-
-    def add(self, s, x=None, y=None):
-        if x is not None and y is not None:
-            self.screen.addstr(x, y, s)
-        else:
-            self.screen.addstr(s)
-
-    def getch(self):
-        return self.screen.getch()
-
-    def __del__(self):
-        curses.endwin()
+from evrobot import Robot, Simulator
+from time import sleep
+import logging
 
 
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(threadName)-10s %(name)-9s %(message)s')
 
-c = Curses()
+# create our callbacks
+def ready(robot, message):
+    robot.moveby(2.2, 3.3, 0.5)
 
-c.add('Hello World!')
 
-count = 0
-run = True
-while run:
-    c.add(str(count), 10, 10)
-    run = c.getch() != ord('q')
-    count += 1
+def move2_finished(robot, message):
+    robot.stop()
+    return True
+
+def move_failed(robot, message):
+    robot.wait()
+    robot.stop()
+
+def move1_finished(robot, message):
+    robot.subscribe('robot.move.finished', move2_finished)
+    robot.moveby(12, 0, 1)
+    return True
+
+
+def done(robot, message):
+    pass
+
+
+# create our device
+simulator = Simulator(10, 10, 5.5, 2.4, 45)
+# create our robot
+robot = Robot(simulator)
+
+# subscribe to things
+robot.subscribe('robot.ready', ready)
+robot.subscribe('robot.move.finished', move1_finished)
+robot.subscribe('robot.move.failed', move_failed)
+robot.subscribe('robot.done', done)
+
+# start things running
+robot.run()
