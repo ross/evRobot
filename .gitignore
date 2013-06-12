@@ -1,3 +1,7 @@
 build/
+.coverage
+coverage.xml
 env/
+htmlcov/
+nosetests.xml
 *.pyc

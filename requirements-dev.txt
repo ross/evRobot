@@ -1,0 +1,6 @@
+coverage
+nose
+unittest2
+pep8
+pyflakes
+-e git://github.com/ross/python-lint8.git#egg=lint8
