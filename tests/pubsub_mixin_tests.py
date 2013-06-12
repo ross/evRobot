@@ -10,6 +10,15 @@ from evrobot.pubsub import PubSubMixin
 from unittest2 import TestCase
 
 
+class _Listener(object):
+
+    def __init__(self):
+        self.count = 0
+
+    def listen(self):
+        self.count += 1
+
+
 class PubSubMixinTest(PubSubMixin, TestCase):
 
     def subscribing_method(self, message):
@@ -58,6 +67,23 @@ class PubSubMixinTest(PubSubMixin, TestCase):
         self.assertEquals(5, self.count)
         self.assertEquals(tuple(), self.args)
         self.assertEquals({'kw1': 47, 'kw2': 48}, self.kwargs)
+
+    def test_unsubscribe_all(self):
+
+        def subscriber():
+            self.count += 1
+
+        self.subscribe(subscriber, 'first')
+        self.subscribe(subscriber, 'first.second')
+
+        self.count = 0
+        self.send('first.second')
+        self.assertEquals(1, self.count)
+
+        self.unsubscribe(subscriber)
+
+        self.send('first.second')
+        self.assertEquals(1, self.count)
 
     def test_dotted(self):
 
@@ -183,30 +209,47 @@ class PubSubMixinTest(PubSubMixin, TestCase):
         '''this is a HACK to test out the pre-2.6 mechinism for calling
         methods'''
 
-        class Listener(object):
-
-            def __init__(self):
-                self.count = 0
-
-            def listen(self):
-                self.count += 1
-
         # an object that we can stuff im_self and im_func on to and pretend
         # like it's a pre-2.6 bound method
         class Helper(object):
             im_self = None
             im_func = None
 
-        listener = Listener()
+        listener = _Listener()
 
         method = Helper()
         # the listener instance is self
         method.im_self = listener
         # the the class method (not instance)
-        method.im_func = Listener.listen
+        method.im_func = _Listener.listen
 
         self.subscribe(method, 'callme')
 
         self.assertEquals(0, listener.count)
         self.send('callme')
         self.assertEquals(1, listener.count)
+
+    def test_two_instance_of_same_class(self):
+        one = _Listener()
+        two = _Listener()
+
+        self.subscribe(one.listen, 'callme')
+        self.subscribe(two.listen, 'callme')
+
+        self.assertEquals(0, one.count)
+        self.assertEquals(0, two.count)
+        self.send('callme')
+        self.assertEquals(1, one.count)
+        self.assertEquals(1, two.count)
+
+        self.unsubscribe(one.listen)
+
+        self.send('callme')
+        self.assertEquals(1, one.count)
+        self.assertEquals(2, two.count)
+
+        self.unsubscribe(two.listen)
+
+        self.send('callme')
+        self.assertEquals(1, one.count)
+        self.assertEquals(2, two.count)

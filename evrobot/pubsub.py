@@ -37,18 +37,27 @@ class PubSubMixin(object):
         return subscriber
 
     def subscribe(self, subscriber, *topics):
+        '''subscribe subscriber to the list of provided topics'''
         self.logger.info('subscribe: subscriber=%s, topics=%s', subscriber,
                          topics)
         for topic in topics:
             self.subscribers[topic][subscriber] = self._listener(subscriber)
 
     def unsubscribe(self, subscriber, *topics):
+        '''unsubscribe subscriber from the topics passed, if none are passed
+        remove it from all topics'''
         self.logger.info('unsubscribe: subscriber=%s, topics=%s', subscriber,
                          topics)
-        for topic in topics:
-            self.subscribers[topic].pop(subscriber, None)
+        for topic in topics if len(topics) else self.subscribers.keys():
+            self.logger.info('foo=%s, %s', topic,
+            self.subscribers[topic].pop(subscriber, None))
 
     def send(self, topic, *args, **kwargs):
+        '''send a message to app subscribers listening to topic with the
+        provided args and kwargs. if topic contains dots, first.second it will
+        be considered a hierarchical topic and messages will be sent to both
+        first.second and first. care is taken that a given subscriber will
+        only see a message once'''
         self.logger.info('send: topic=%s, args=%s, kwargs=%s', topic, args,
                          kwargs)
         seen = set()

@@ -12,7 +12,9 @@ import logging
 Call = namedtuple('Call', ('method', 'args', 'kwargs'))
 
 
-# TODO: thread safety
+# TODO: thread safety, probably should just use a Queue object as that would
+# allow us to block until there's work to be done, but that may tie us to being
+# a thread more than makes sense...
 class CallQueueMixin(object):
     logger = logging.getLogger('CommandsMixin')
 
