@@ -20,8 +20,8 @@ class DummySerial(object):
         pass
 
 
-#serial = Serial('/dev/ttyAMA0', baudrate=115200, timeout=0.5)
-serial = DummySerial()
+serial = Serial('/dev/ttyAMA0', baudrate=115200, timeout=0.5)
+#serial = DummySerial()
 roomba = Roomba(serial)
 robot = Robot(roomba)
 
@@ -29,8 +29,4 @@ robot = Robot(roomba)
 robot.move_by(1, 0.5, 2 / 5.0)
 robot.move_by(-sqrt(1.25), 0, 0.5)
 robot.rotate_by(163)
-
-from time import sleep
-sleep(5)
-
 robot.shutdown()
