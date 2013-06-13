@@ -24,12 +24,14 @@ class PubSubMixin(object):
         if hasattr(subscriber, '__self__'):
             # bound method python >= 2.6
             orig = subscriber
+
             def wrapper(*args, **kwargs):
                 return orig.__func__(orig.__self__, *args, **kwargs)
             subscriber = wrapper
         elif hasattr(subscriber, 'im_self'):
             # bound method python < 2.6
             orig = subscriber
+
             def wrapper(*args, **kwargs):
                 return orig.im_func(orig.im_self, *args, **kwargs)
             subscriber = wrapper
@@ -49,8 +51,7 @@ class PubSubMixin(object):
         self.logger.info('unsubscribe: subscriber=%s, topics=%s', subscriber,
                          topics)
         for topic in topics if len(topics) else self.subscribers.keys():
-            self.logger.info('foo=%s, %s', topic,
-            self.subscribers[topic].pop(subscriber, None))
+            self.subscribers[topic].pop(subscriber, None)
 
     def send(self, topic, *args, **kwargs):
         '''send a message to app subscribers listening to topic with the
@@ -76,4 +77,3 @@ class PubSubMixin(object):
             if '.' not in topic:
                 break
             topic = topic[:topic.rfind('.')]
-
