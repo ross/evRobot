@@ -1,5 +1,5 @@
 evRobot - Event Driven Robot (Roomba) Control in Python
-#######################################################
+=======================================================
 
 Currently a work in progress/going through heavy refactoring. The goal is to
 create a really easy to use framework for programming robots,

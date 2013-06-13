@@ -5,12 +5,12 @@
 from __future__ import absolute_import, division, print_function, \
     unicode_literals
 
-from .device import Device
+from .device import Roomba
 from .robot import Robot
 
 # quell warnings
 Robot
-Device
+Roomba
 
 #from Queue import Queue
 #from collections import defaultdict
