@@ -10,23 +10,20 @@ import logging
 
 
 logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(threadName)-10s %(name)-9s %(message)s')
+                    format='%(asctime)s %(threadName)-10s %(name)-9s '
+                    '%(message)s')
 logger = logging.getLogger(__name__)
 
 
-class DummySerial(object):
-
-    def write(self, byte):
-        pass
-
-
 serial = Serial('/dev/ttyAMA0', baudrate=115200, timeout=0.5)
-#serial = DummySerial()
 roomba = Roomba(serial)
 robot = Robot(roomba)
 
 # queue up some commands
-robot.move_by(1, 0.5, 2 / 5.0)
-robot.move_by(-sqrt(1.25), 0, 0.5)
-robot.rotate_by(163)
+roomba.move_by(1, 0.5, 2 / 5.0)
+roomba.move_by(-sqrt(1.25), 0, 0.5)
+roomba.rotate_by(163)
+
+# shutdown, waiting for things to finish
 robot.shutdown()
+robot.run()
