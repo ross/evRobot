@@ -29,8 +29,10 @@ class Robot(PubSubMixin):
         for device in self.devices:
             self.logger.debug('shutdown: send shutdown to device=%s', device)
             device.shutdown(finish)
+
+    def wait(self):
+        self.logger.info('wait: started')
         for device in self.devices:
             self.logger.debug('shutdown: wait for device=%s', device)
             device.join()
-        self.logger.info('shutdown: finished')
-        self.send('robot.shutdown.finished')
+        self.logger.info('wait: finished')

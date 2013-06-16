@@ -15,7 +15,9 @@ logging.basicConfig(level=logging.DEBUG,
 logger = logging.getLogger(__name__)
 
 
-serial = Serial('/dev/ttyAMA0', baudrate=115200, timeout=0.5)
+#serial = Serial('/dev/ttyAMA0', baudrate=115200, timeout=0.5)
+from dummyserial import DummySerial
+serial = DummySerial()
 roomba = Roomba(serial)
 robot = Robot(roomba)
 
@@ -24,6 +26,7 @@ roomba.move_by(1, 0.5, 2 / 5.0)
 roomba.move_by(-sqrt(1.25), 0, 0.5)
 roomba.rotate_by(163)
 
-# shutdown, waiting for things to finish
+# shutdown
 robot.shutdown()
-robot.run()
+# wait for things to finish
+robot.wait()

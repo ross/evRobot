@@ -263,7 +263,6 @@ class Roomba(Device):
             self.dropping = False
 
     def tick(self, elapsed):
-        print('elapsed')
         self._check_sensors()
 
         # roomba updates it's information every 15ms so ideally we'd poll at
