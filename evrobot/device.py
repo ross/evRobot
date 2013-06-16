@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function, \
     unicode_literals
 
 from datetime import datetime
-from math import atan, degrees, sqrt
+from math import atan2, degrees, sqrt
 from threading import Thread
 from time import sleep
 from .callqueue import CallQueueMixin
@@ -104,7 +104,7 @@ class Roomba(Device):
     def move_by(self, x, y, speed=1):
         speed = min(self.max_speed, speed * self.max_speed)
 
-        a = degrees(atan(y / float(x)))
+        a = degrees(atan2(y, float(x)))
         # if we're moving backwards
         if x < 0:
             # we need to adjust the angle
@@ -293,3 +293,63 @@ class Roomba(Device):
 
     def _read(self, n):
         return map(ord, self.serial.read(n))
+
+
+class Hmc5883l(Device):
+
+    def __init__(self, bus, address):
+        self.bus = bus
+        self.address = address
+        self.heading = None
+
+        # make sure we're in the desired setup
+        # avg 8 samples, default output rate
+        bus.write_byte_data(self.address, 0x00, 0x50)
+        # +1.3Ga
+        bus.write_byte_data(self.address, 0x01, 0x20)
+        # mode register, single shot
+        bus.write_byte_data(self.address, 0x02, 0x01)
+
+        super(Hmc5883l, self).__init__()
+
+    def tick(self, elapsed):
+        # mode register, single shot
+        self.bus.write_byte_data(self.address, 0x02, 0x01)
+        # 6ms measurement time, plus some slop
+        sleep(0.012)
+
+        # TODO: automatically adjust gain if saturated
+
+        x = self.bus.read_byte_data(self.address, 0x03) << 8 | \
+            self.bus.read_byte_data(self.address, 0x03 + 1)
+        z = self.bus.read_byte_data(self.address, 0x03 + 2) << 8 | \
+            self.bus.read_byte_data(self.address, 0x03 + 3)
+        # qull warnings
+        z
+        # TODO: account for Z?
+        y = self.bus.read_byte_data(self.address, 0x03 + 4) << 8 | \
+            self.bus.read_byte_data(self.address, 0x03 + 5)
+
+        if x & 0x8000:
+            x = x - (1 << 16)
+        if y & 0x8000:
+            y = y - (1 << 16)
+
+        if y == 0:
+            if x < 0:
+                heading = 180
+            else:
+                heading = 0
+        elif y < 0:
+            heading = 360 + degrees(atan2(y, x))
+        else:  # y > 0
+            heading = 90 - degrees(atan2(x, y))
+
+        if self.heading != heading:
+            # only send out on change
+            self.heading = heading
+            self.messenger.send('robot.heading', heading)
+
+        # ~10 measurments a second between this sleep in the wait for read
+        # above
+        sleep(0.088)

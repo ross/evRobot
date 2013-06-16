@@ -15,9 +15,7 @@ logging.basicConfig(level=logging.DEBUG,
 logger = logging.getLogger(__name__)
 
 
-#serial = Serial('/dev/ttyAMA0', baudrate=115200, timeout=0.5)
-from dummyserial import DummySerial
-serial = DummySerial()
+serial = Serial('/dev/ttyAMA0', baudrate=115200, timeout=0.5)
 roomba = Roomba(serial)
 robot = Robot(roomba)
 

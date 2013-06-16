@@ -40,7 +40,7 @@ class BumpingRobot(Robot):
         else:
             self.shutdown()
 
-    def move_finished(type, *args):
+    def move_finished(self, type, *args):
         if type == 'debump':
             # rotate a random amount between -180 and 180
             if random() > 0.5:
